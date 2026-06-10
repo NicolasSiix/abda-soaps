@@ -108,7 +108,10 @@
         <div class="tab-content active" id="tab-orders">
           <div class="admin-toolbar">
             <h3>Gerenciar Pedidos</h3>
-            <button class="btn btn--outline btn--sm" id="export-csv-btn">↓ Exportar CSV</button>
+            <div style="display:flex;gap:var(--sp-2)">
+              <button class="btn btn--gold btn--sm" id="new-order-btn">+ Novo Pedido</button>
+              <button class="btn btn--outline btn--sm" id="export-csv-btn">↓ Exportar CSV</button>
+            </div>
           </div>
           <div id="orders-table-wrap"></div>
         </div>
