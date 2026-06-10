@@ -3,7 +3,7 @@
 // ══════════════════════════════════════════════
 
 // ⚠️  Troque a senha antes de publicar!
-const ADMIN_PASSWORD = 'abda2024';
+const ADMIN_PASSWORD = 'Thaiabda01';
 
 // Status dos pedidos (devem bater com o CHECK do banco em supabase/schema.sql)
 const STATUS = {
