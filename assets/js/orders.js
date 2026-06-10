@@ -147,7 +147,18 @@ const Orders = (() => {
   // NOVO PEDIDO MANUAL
   // ══════════════════════════════════════════
 
-  const openManualOrderForm = () => {
+  let cachedProducts = [];
+
+  const openManualOrderForm = async () => {
+    // Carrega produtos cadastrados
+    try {
+      const { data, error } = await db
+        .from('products')
+        .select('id, name, price, stock')
+        .eq('active', true)
+        .order('name');
+      if (!error) cachedProducts = data || [];
+    } catch { cachedProducts = []; }
     // Cria modal dinamicamente
     const existing = document.getElementById('manual-order-overlay');
     if (existing) existing.remove();
@@ -265,20 +276,58 @@ const Orders = (() => {
     const row  = document.createElement('div');
     row.id = `mo-item-${idx}`;
     row.style.cssText = 'display:grid;grid-template-columns:1fr 60px 90px 32px;gap:var(--sp-2);margin-bottom:var(--sp-2);align-items:center';
+
+    const productOptions = cachedProducts.length
+      ? cachedProducts.map(p =>
+          `<option value="${p.id}" data-price="${p.price}" data-name="${esc(p.name)}">${esc(p.name)} — ${fmt(p.price)}</option>`
+        ).join('')
+      : '';
+
     row.innerHTML = `
-      <input class="form-input mo-item-name" type="text" placeholder="Nome do item" style="font-size:var(--text-sm)">
-      <input class="form-input mo-item-qty"  type="number" min="1" value="1" placeholder="Qtd" style="font-size:var(--text-sm);text-align:center">
+      <select class="form-input mo-item-select form-select" style="font-size:var(--text-sm)">
+        <option value="">Selecione ou digite abaixo</option>
+        ${productOptions}
+        <option value="__custom__">✏️ Item personalizado...</option>
+      </select>
+      <input class="form-input mo-item-qty" type="number" min="1" value="1" style="font-size:var(--text-sm);text-align:center">
       <input class="form-input mo-item-price" type="number" min="0" step="0.01" placeholder="Preço" style="font-size:var(--text-sm)">
       <button type="button" class="icon-btn" style="color:var(--danger)" data-remove="${idx}">✕</button>
     `;
-    list.appendChild(row);
 
-    // Recalcula total ao digitar
+    // Campo de nome personalizado (oculto por padrão)
+    const customRow = document.createElement('div');
+    customRow.id = `mo-item-custom-${idx}`;
+    customRow.style.cssText = 'display:none;margin-bottom:var(--sp-2)';
+    customRow.innerHTML = `
+      <input class="form-input mo-item-name" type="text" placeholder="Nome do item personalizado" style="font-size:var(--text-sm)">
+    `;
+    list.appendChild(row);
+    list.appendChild(customRow);
+
+    // Ao selecionar produto, preenche preço automaticamente
+    const select = row.querySelector('.mo-item-select');
+    select.addEventListener('change', () => {
+      const opt = select.options[select.selectedIndex];
+      if (opt.value === '__custom__') {
+        customRow.style.display = 'block';
+        row.querySelector('.mo-item-price').value = '';
+      } else if (opt.value) {
+        customRow.style.display = 'none';
+        row.querySelector('.mo-item-price').value = opt.dataset.price || '';
+        recalcTotal();
+      } else {
+        customRow.style.display = 'none';
+        row.querySelector('.mo-item-price').value = '';
+      }
+    });
+
     row.querySelectorAll('.mo-item-qty, .mo-item-price').forEach(input =>
       input.addEventListener('input', recalcTotal)
     );
+
     row.querySelector('[data-remove]').addEventListener('click', () => {
       row.remove();
+      customRow.remove();
       recalcTotal();
     });
   };
@@ -308,17 +357,30 @@ const Orders = (() => {
 
     if (!name) { Toast.error('Informe o nome do cliente.'); return; }
 
-    // Coleta itens
-    const itemRows = document.querySelectorAll('#mo-items-list > div');
+    // Coleta itens (apenas linhas com select, não as de nome personalizado)
+    const itemRows = document.querySelectorAll('#mo-items-list > div[id^="mo-item-"]:not([id*="custom"])');
     const items = [];
     let total = 0;
 
     itemRows.forEach(row => {
-      const itemName = row.querySelector('.mo-item-name')?.value.trim();
-      const qty      = parseInt(row.querySelector('.mo-item-qty')?.value)    || 0;
+      const select   = row.querySelector('.mo-item-select');
+      const qty      = parseInt(row.querySelector('.mo-item-qty')?.value)     || 0;
       const price    = parseFloat(row.querySelector('.mo-item-price')?.value) || 0;
+      const idx      = row.id.replace('mo-item-', '');
+
+      let itemName  = '';
+      let productId = null;
+
+      if (select.value === '__custom__') {
+        itemName = document.querySelector(`#mo-item-custom-${idx} .mo-item-name`)?.value.trim();
+      } else if (select.value) {
+        const opt = select.options[select.selectedIndex];
+        itemName  = opt.dataset.name;
+        productId = select.value;
+      }
+
       if (itemName && qty > 0) {
-        items.push({ product_name: itemName, quantity: qty, unit_price: price });
+        items.push({ product_name: itemName, product_id: productId, quantity: qty, unit_price: price });
         total += qty * price;
       }
     });
