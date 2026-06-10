@@ -152,10 +152,24 @@ const ProductsAdmin = (() => {
             value="${esc(product.category || '')}" placeholder="ex: Lavanda, Mel, Cítrico...">
         </div>
         <div class="form-group">
-          <label class="form-label" for="pf-image">URL da imagem</label>
-          <input class="form-input" id="pf-image" type="url"
-            value="${esc(product.image_url || '')}" placeholder="https://...">
-          <p class="form-hint">Cole o link de uma imagem hospedada online</p>
+          <label class="form-label">Imagem do produto</label>
+          <div style="display:flex;gap:var(--sp-3);align-items:flex-start;flex-wrap:wrap">
+            <div style="flex:1;min-width:200px">
+              <input class="form-input" id="pf-image" type="url"
+                value="${esc(product.image_url || '')}" placeholder="URL da imagem">
+              <p class="form-hint">Cole uma URL ou use o botão ao lado para fazer upload</p>
+            </div>
+            <div>
+              <label class="btn btn--outline btn--sm" style="cursor:pointer;margin-top:0">
+                📁 Escolher arquivo
+                <input type="file" id="pf-image-upload" accept="image/*" style="display:none">
+              </label>
+            </div>
+          </div>
+          <div id="pf-image-preview" style="margin-top:var(--sp-3)">
+            ${product.image_url ? `<img src="${esc(product.image_url)}" style="width:120px;height:90px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--cream-border)">` : ''}
+          </div>
+          <p id="pf-upload-status" style="font-size:var(--text-xs);color:var(--text-muted);margin-top:var(--sp-1)"></p>
         </div>
         <div class="form-group">
           <label class="payment-label" style="width:fit-content">
@@ -176,9 +190,45 @@ const ProductsAdmin = (() => {
     overlay.hidden = false;
     document.getElementById('product-form').addEventListener('submit', handleSave);
     document.getElementById('product-cancel-btn').addEventListener('click', closeForm);
+    document.getElementById('pf-image-upload').addEventListener('change', handleImageUpload);
   };
 
   const closeForm = () => { overlay.hidden = true; editingId = null; };
+
+  // ── Upload de imagem ───────────────────────
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const statusEl  = document.getElementById('pf-upload-status');
+    const previewEl = document.getElementById('pf-image-preview');
+    const urlInput  = document.getElementById('pf-image');
+
+    statusEl.textContent = 'Enviando imagem...';
+    statusEl.style.color = 'var(--text-muted)';
+
+    const ext      = file.name.split('.').pop();
+    const fileName = `${Date.now()}.${ext}`;
+
+    try {
+      const { error } = await db.storage
+        .from('produtos')
+        .upload(fileName, file, { upsert: true });
+
+      if (error) throw error;
+
+      const { data } = db.storage.from('produtos').getPublicUrl(fileName);
+      urlInput.value = data.publicUrl;
+
+      previewEl.innerHTML = `<img src="${data.publicUrl}" style="width:120px;height:90px;object-fit:cover;border-radius:var(--radius);border:1px solid var(--cream-border)">`;
+      statusEl.textContent = 'Imagem enviada com sucesso!';
+      statusEl.style.color = 'var(--success)';
+    } catch (err) {
+      console.error('Erro no upload:', err);
+      statusEl.textContent = 'Erro ao enviar imagem. Tente novamente.';
+      statusEl.style.color = 'var(--danger)';
+    }
+  };
 
   // ── Salvar produto ─────────────────────────
   const handleSave = async (e) => {
