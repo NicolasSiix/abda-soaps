@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abda Soaps — Sabonetes Artesanais</title>
+  <link rel="icon" href="assets/images/logo.jpeg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/styles.css">
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════
+       HEADER
+  ══════════════════════════════════════ -->
+  <header class="site-header" id="site-header">
+    <div class="header-inner">
+      <div class="brand">
+        <img src="assets/images/logo.jpeg" alt="Abda Soaps" class="brand-logo">
+        <div class="brand-text">
+          <span class="brand-name">Abda Soaps</span>
+          <span class="brand-tagline">Sabonetes Artesanais</span>
+        </div>
+      </div>
+
+      <nav class="main-nav" id="main-nav">
+        <button class="nav-btn active" data-view="store">Loja</button>
+        <button class="nav-btn" data-view="tracking">Rastrear</button>
+        <button class="nav-btn nav-btn--admin" data-view="admin" id="admin-nav-btn">Admin</button>
+      </nav>
+
+      <button class="cart-toggle" id="cart-toggle" aria-label="Abrir carrinho">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+          <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+        </svg>
+        <span class="cart-count" id="cart-count" hidden>0</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ══════════════════════════════════════
+       MAIN
+  ══════════════════════════════════════ -->
+  <main class="main-content">
+
+    <!-- ── LOJA ─────────────────────────── -->
+    <section class="view active" id="view-store">
+
+      <div class="hero">
+        <div class="hero-bg-ornament" aria-hidden="true"></div>
+        <div class="hero-content">
+          <span class="hero-eyebrow">✦ Feito com amor e cuidado ✦</span>
+          <h1 class="hero-title">Sabonetes que <em>transformam</em><br>o seu cuidado diário</h1>
+          <p class="hero-subtitle">Cada peça produzida artesanalmente com ingredientes naturais selecionados, pensada para oferecer uma experiência única de bem-estar.</p>
+          <div class="hero-divider"><span></span><i>✦</i><span></span></div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h2 class="section-title">Nossos Produtos</h2>
+        <div class="ornament-line"><span></span><i>✦</i><span></span></div>
+      </div>
+
+      <div class="products-loading" id="products-loading">
+        <div class="loading-spinner"></div>
+        <p>Carregando produtos...</p>
+      </div>
+
+      <div class="products-grid" id="products-grid"></div>
+
+      <p class="products-empty" id="products-empty" hidden>
+        Nenhum produto disponível no momento.
+      </p>
+
+    </section>
+
+    <!-- ── RASTREAMENTO ──────────────────── -->
+    <section class="view" id="view-tracking">
+      <div class="page-header">
+        <span class="hero-eyebrow">✦ Acompanhe seu pedido ✦</span>
+        <h2 class="page-title">Rastrear Pedido</h2>
+        <div class="ornament-line"><span></span><i>✦</i><span></span></div>
+        <p class="page-subtitle">Digite o código recebido ao finalizar sua compra</p>
+      </div>
+
+      <div class="tracking-container">
+        <div class="tracking-form-wrap">
+          <input type="text" class="form-input tracking-input" id="tracking-input"
+            placeholder="Cole aqui o código do pedido..." autocomplete="off">
+          <button class="btn btn--gold" id="tracking-btn">Buscar</button>
+        </div>
+        <div id="tracking-result"></div>
+      </div>
+    </section>
+
+    <!-- ── ADMIN ─────────────────────────── -->
+    <section class="view" id="view-admin">
+      <div id="admin-panel" hidden>
+        <div class="admin-tabs">
+          <button class="tab-btn active" data-tab="orders">Pedidos</button>
+          <button class="tab-btn" data-tab="products">Produtos</button>
+          <button class="tab-btn" data-tab="stats">Estatísticas</button>
+        </div>
+
+        <div class="tab-content active" id="tab-orders">
+          <div class="admin-toolbar">
+            <h3>Gerenciar Pedidos</h3>
+            <button class="btn btn--outline btn--sm" id="export-csv-btn">↓ Exportar CSV</button>
+          </div>
+          <div id="orders-table-wrap"></div>
+        </div>
+
+        <div class="tab-content" id="tab-products">
+          <div class="admin-toolbar">
+            <h3>Catálogo de Produtos</h3>
+            <button class="btn btn--gold btn--sm" id="new-product-btn">+ Novo Produto</button>
+          </div>
+          <div id="products-admin-wrap"></div>
+        </div>
+
+        <div class="tab-content" id="tab-stats">
+          <div id="stats-wrap"></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ══════════════════════════════════════
+       CART SIDEBAR
+  ══════════════════════════════════════ -->
+  <div class="cart-overlay" id="cart-overlay"></div>
+  <aside class="cart-sidebar" id="cart-sidebar" aria-label="Carrinho">
+    <div class="cart-header">
+      <h3>Seu Carrinho</h3>
+      <button class="icon-btn" id="cart-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="cart-items" id="cart-items"></div>
+    <div class="cart-empty" id="cart-empty">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+        <circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/>
+        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/>
+      </svg>
+      <p>Seu carrinho está vazio</p>
+    </div>
+    <div class="cart-footer" id="cart-footer" hidden>
+      <div class="cart-total">
+        <span>Total</span>
+        <strong id="cart-total-display">R$ 0,00</strong>
+      </div>
+      <button class="btn btn--gold btn--full" id="checkout-btn">Finalizar Pedido</button>
+    </div>
+  </aside>
+
+  <!-- ══════════════════════════════════════
+       CHECKOUT MODAL
+  ══════════════════════════════════════ -->
+  <div class="modal-overlay" id="checkout-overlay" hidden>
+    <div class="modal" id="checkout-modal" role="dialog" aria-modal="true" aria-labelledby="checkout-title">
+      <button class="icon-btn modal-close" id="checkout-close" aria-label="Fechar">✕</button>
+      <div class="modal-header">
+        <h3 class="modal-title" id="checkout-title">Finalizar Pedido</h3>
+      </div>
+      <div class="modal-body" id="checkout-body"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       ADMIN LOGIN MODAL
+  ══════════════════════════════════════ -->
+  <div class="modal-overlay" id="admin-overlay" hidden>
+    <div class="modal modal--sm" role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
+      <button class="icon-btn modal-close" id="admin-modal-close" aria-label="Fechar">✕</button>
+      <div class="modal-header">
+        <h3 class="modal-title" id="admin-modal-title">Área Restrita</h3>
+      </div>
+      <div class="modal-body" id="admin-body"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       PRODUCT FORM MODAL (Admin)
+  ══════════════════════════════════════ -->
+  <div class="modal-overlay" id="product-form-overlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="product-form-title">
+      <button class="icon-btn modal-close" id="product-form-close" aria-label="Fechar">✕</button>
+      <div class="modal-header">
+        <h3 class="modal-title" id="product-form-title">Novo Produto</h3>
+      </div>
+      <div class="modal-body" id="product-form-body"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       TOAST
+  ══════════════════════════════════════ -->
+  <div class="toast-container" id="toast-container" aria-live="polite"></div>
+
+  <!-- ══════════════════════════════════════
+       SCRIPTS
+  ══════════════════════════════════════ -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="assets/js/supabase-client.js"></script>
+  <script src="assets/js/config.js"></script>
+  <script src="assets/js/utils.js"></script>
+  <script src="assets/js/store.js"></script>
+  <script src="assets/js/checkout.js"></script>
+  <script src="assets/js/orders.js"></script>
+  <script src="assets/js/products-admin.js"></script>
+  <script src="assets/js/tracking.js"></script>
+  <script src="assets/js/admin.js"></script>
+</body>
+</html>
