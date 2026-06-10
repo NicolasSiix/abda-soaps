@@ -127,7 +127,10 @@ const Store = (() => {
           }
         </div>
         <div class="product-body">
-          ${p.category ? `<div class="product-category">${esc(p.category)}</div>` : ''}
+          ${p.color || p.aroma || p.base ? `
+            <div class="product-category">
+              ${[p.color, p.aroma, p.base].filter(Boolean).map(esc).join(' · ')}
+            </div>` : ''}
           <h3 class="product-name">${esc(p.name)}</h3>
           ${p.description ? `<p class="product-desc">${esc(p.description)}</p>` : ''}
           <div class="product-footer">

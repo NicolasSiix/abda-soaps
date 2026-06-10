@@ -50,7 +50,7 @@ const ProductsAdmin = (() => {
           <thead>
             <tr>
               <th>Produto</th>
-              <th>Categoria</th>
+              <th>Detalhes</th>
               <th>Preço</th>
               <th>Estoque</th>
               <th>Status</th>
@@ -80,7 +80,12 @@ const ProductsAdmin = (() => {
         <div style="font-weight:500;color:var(--dark)">${esc(p.name)}</div>
         ${p.description ? `<div style="font-size:12px;color:var(--text-muted);margin-top:2px">${esc(p.description.slice(0, 60))}${p.description.length > 60 ? '…' : ''}</div>` : ''}
       </td>
-      <td style="color:var(--text-muted)">${p.category ? esc(p.category) : '—'}</td>
+      <td>
+        ${p.color ? `<div style="font-size:12px;color:var(--text-muted)">🎨 ${esc(p.color)}</div>` : ''}
+        ${p.aroma ? `<div style="font-size:12px;color:var(--text-muted)">🌿 ${esc(p.aroma)}</div>` : ''}
+        ${p.base  ? `<div style="font-size:12px;color:var(--text-muted)">🧴 ${esc(p.base)}</div>`  : ''}
+        ${!p.color && !p.aroma && !p.base ? '—' : ''}
+      </td>
       <td style="font-weight:600;color:var(--gold);white-space:nowrap">${fmt(p.price)}</td>
       <td>
         <span style="color:${p.stock === 0 ? 'var(--danger)' : 'var(--text)'}">
@@ -146,10 +151,41 @@ const ProductsAdmin = (() => {
               value="${product.stock ?? 0}">
           </div>
         </div>
+        <div style="font-size:var(--text-xs);font-weight:600;letter-spacing:0.08em;text-transform:uppercase;color:var(--text-muted);margin:var(--sp-2) 0 var(--sp-4);padding-top:var(--sp-4);border-top:1px solid var(--cream-border)">
+          Categoria
+        </div>
+
         <div class="form-group">
-          <label class="form-label" for="pf-category">Categoria</label>
-          <input class="form-input" id="pf-category" type="text"
-            value="${esc(product.category || '')}" placeholder="ex: Lavanda, Mel, Cítrico...">
+          <label class="form-label" for="pf-color">Cor</label>
+          <select class="form-input form-select" id="pf-color">
+            <option value="">Selecione uma cor</option>
+            <option value="Branco"       ${product.color === 'Branco'       ? 'selected' : ''}>⬜ Branco</option>
+            <option value="Creme"        ${product.color === 'Creme'        ? 'selected' : ''}>🟨 Creme</option>
+            <option value="Rosa"         ${product.color === 'Rosa'         ? 'selected' : ''}>🌸 Rosa</option>
+            <option value="Lilás"        ${product.color === 'Lilás'        ? 'selected' : ''}>💜 Lilás</option>
+            <option value="Lavanda"      ${product.color === 'Lavanda'      ? 'selected' : ''}>🪻 Lavanda</option>
+            <option value="Amarelo"      ${product.color === 'Amarelo'      ? 'selected' : ''}>🟡 Amarelo</option>
+            <option value="Laranja"      ${product.color === 'Laranja'      ? 'selected' : ''}>🟠 Laranja</option>
+            <option value="Verde"        ${product.color === 'Verde'        ? 'selected' : ''}>🟢 Verde</option>
+            <option value="Azul"         ${product.color === 'Azul'         ? 'selected' : ''}>🔵 Azul</option>
+            <option value="Marrom"       ${product.color === 'Marrom'       ? 'selected' : ''}>🟤 Marrom</option>
+            <option value="Preto"        ${product.color === 'Preto'        ? 'selected' : ''}>⬛ Preto</option>
+            <option value="Vermelho"     ${product.color === 'Vermelho'     ? 'selected' : ''}>🔴 Vermelho</option>
+            <option value="Multicolorido"${product.color === 'Multicolorido'? 'selected' : ''}>🌈 Multicolorido</option>
+          </select>
+        </div>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-4)">
+          <div class="form-group">
+            <label class="form-label" for="pf-aroma">Aroma</label>
+            <input class="form-input" id="pf-aroma" type="text"
+              value="${esc(product.aroma || '')}" placeholder="ex: Lavanda, Baunilha, Cítrico...">
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="pf-base">Base</label>
+            <input class="form-input" id="pf-base" type="text"
+              value="${esc(product.base || '')}" placeholder="ex: Glicerina, Argila, Aveia...">
+          </div>
         </div>
         <div class="form-group">
           <label class="form-label">Imagem do produto</label>
@@ -234,13 +270,15 @@ const ProductsAdmin = (() => {
   const handleSave = async (e) => {
     e.preventDefault();
 
-    const name      = document.getElementById('pf-name').value.trim();
+    const name        = document.getElementById('pf-name').value.trim();
     const description = document.getElementById('pf-desc').value.trim();
-    const price     = parseFloat(document.getElementById('pf-price').value);
-    const stock     = parseInt(document.getElementById('pf-stock').value, 10) || 0;
-    const category  = document.getElementById('pf-category').value.trim();
-    const image_url = document.getElementById('pf-image').value.trim();
-    const active    = document.getElementById('pf-active').checked;
+    const price       = parseFloat(document.getElementById('pf-price').value);
+    const stock       = parseInt(document.getElementById('pf-stock').value, 10) || 0;
+    const color       = document.getElementById('pf-color').value.trim();
+    const aroma       = document.getElementById('pf-aroma').value.trim();
+    const base        = document.getElementById('pf-base').value.trim();
+    const image_url   = document.getElementById('pf-image').value.trim();
+    const active      = document.getElementById('pf-active').checked;
 
     if (!name || isNaN(price) || price < 0) {
       Toast.error('Preencha nome e preço válido.');
@@ -256,7 +294,9 @@ const ProductsAdmin = (() => {
       description: description || null,
       price,
       stock,
-      category: category || null,
+      color:     color     || null,
+      aroma:     aroma     || null,
+      base:      base      || null,
       image_url: image_url || null,
       active,
     };
